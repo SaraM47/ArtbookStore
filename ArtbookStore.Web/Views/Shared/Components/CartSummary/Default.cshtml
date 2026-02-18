@@ -1,0 +1,50 @@
+@model ArtbookStore.Web.Models.ViewModels.CartSummaryViewModel
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle"
+       href="#"
+       role="button"
+       data-bs-toggle="dropdown">
+        Cart
+
+        @if (Model.ItemCount > 0)
+        {
+            <span class="badge bg-danger">@Model.ItemCount</span>
+        }
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end p-3"
+        style="min-width: 250px;">
+
+        @if (Model.Items != null && Model.Items.Any())
+        {
+            @foreach (var item in Model.Items)
+            {
+                <li>
+                    @item.Title x @item.Quantity
+                </li>
+            }
+
+            <hr />
+
+            <li>
+                <strong>
+                    Total: @Model.TotalAmount.ToString("0.00")
+                </strong>
+            </li>
+
+            <li>
+                <a class="btn btn-sm btn-primary mt-2"
+                   asp-controller="Orders"
+                   asp-action="Cart">
+                    View Cart
+                </a>
+            </li>
+        }
+        else
+        {
+            <li>Your cart is empty</li>
+        }
+
+    </ul>
+</li>
