@@ -1,0 +1,75 @@
+@model ArtbookStore.Web.Models.Order
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<h2>Order Details</h2>
+
+<hr />
+
+<div class="mb-3">
+    <strong>Order #:</strong> @Model.Id <br />
+    <strong>Date:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm") <br />
+    <strong>Status:</strong> @Model.Status <br />
+    <strong>Total:</strong> @Model.TotalAmount.ToString("C")
+</div>
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="mb-3">
+        <strong>User ID:</strong> @Model.UserId
+    </div>
+}
+
+<hr />
+
+@if (Model.OrderItems == null || !Model.OrderItems.Any())
+{
+    <div class="alert alert-warning">
+        No items found for this order.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-end">Line Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <td>@item.Product?.Title</td>
+                    <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                    <td class="text-center">@item.Quantity</td>
+                    <td class="text-end">
+                        @(item.Quantity * item.UnitPrice).ToString("C")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<div>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="AdminIndex" class="btn btn-outline-secondary">
+            Back to Admin Orders
+        </a>
+    }
+    else
+    {
+        <a asp-action="MyOrders" class="btn btn-outline-secondary">
+            Back to My Orders
+        </a>
+    }
+</div>
