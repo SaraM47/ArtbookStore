@@ -12,6 +12,9 @@ public class Category
     [Required]
     public string? Name { get; set; }
 
+    // Added an optional ImageUrl property to store the URL of the category image in home page
+    public string? ImageUrl { get; set; }
+
     // Navigation property for one category can have many products
     public ICollection<Product>? Products { get; set; }
 }
