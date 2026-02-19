@@ -10,10 +10,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Identity configuration
+// Identity configuration (with roles)
 builder
     .Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
+        // RequireConfirmedAccount should match your intended behavior
         options.SignIn.RequireConfirmedAccount = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -53,7 +54,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "default",pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Seed initial data (roles and admin user)
 using (var scope = app.Services.CreateScope())
