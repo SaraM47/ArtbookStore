@@ -31,6 +31,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Bind InventorySettings from configuration
+builder.Services.Configure<InventorySettings>(
+    builder.Configuration.GetSection("InventorySettings")
+);
+
 var app = builder.Build();
 
 // Middleware pipeline configuration
@@ -54,7 +59,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.MapControllerRoute(name: "default",pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Seed initial data (roles and admin user)
 using (var scope = app.Services.CreateScope())
