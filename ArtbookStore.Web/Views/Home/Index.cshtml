@@ -1,8 +1,220 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model ArtbookStore.Web.Models.ViewModels.HomeViewModel
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero section -->
+<section class="sf-hero" aria-roledescription="carousel" aria-label="Featured artbooks">
+    <div class="sf-hero-inner">
+        <!-- Slide data -->
+        <div class="sf-slides" hidden>
+            <div class="sf-slide"
+                 data-title="Soft Edge"
+                 data-desc="Soft Edge explores the quiet beauty of softness, in expression, color, and atmosphere. This collection focuses on delicate character portraits set against luminous natural backdrops. Gentle brushwork, warm palettes, and subtle facial expressions create a sense of calm intimacy."
+                 data-img="/images/artbookcover8.jpg">
+            </div>
+
+            <div class="sf-slide"
+                 data-title="Nature Art"
+                 data-desc="Nature Art celebrates the relationship between people and the natural world. Featuring pastoral settings, animals, open fields, and vibrant seasonal tones, this collection emphasizes movement, warmth, and organic composition."
+                 data-img="/images/artbookcover1.jpg">
+            </div>
+
+            <div class="sf-slide"
+                 data-title="The Three Rules"
+                 data-desc="The Three Rule shifts into a more graphic and conceptual direction. With bold backgrounds, sharper lines, and striking compositions, this collection explores contrast, innocence and concealment, identity and performance, softness and intensity."
+                 data-img="/images/artbookcover2.jpg">
+            </div>
+        </div>
+
+        <!-- Arrows -->
+        <button class="sf-arrow sf-prev"
+                aria-label="Previous slide"
+                type="button">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <button class="sf-arrow sf-next"
+                aria-label="Next slide"
+                type="button">
+            <i class="bi bi-arrow-right"></i>
+        </button>
+
+        <!-- Visiable slider -->
+        <div class="sf-hero-content">
+
+            <div class="sf-text">
+                <h1 id="sf-title">Soft Edge</h1>
+
+                <p id="sf-desc">
+                    Original artbook over art.
+                </p>
+
+                <a asp-controller="Products"
+                   asp-action="Index"
+                   class="sf-btn">
+                    View the artbook
+                </a>
+            </div>
+
+            <div class="sf-image">
+                <img id="sf-img"
+                     src="/images/artbookcover8.jpg"
+                     alt="Soft Edge artbook cover" />
+            </div>
+
+        </div>
+
+        <!-- Dots -->
+        <div class="sf-dots" role="tablist" aria-label="Slide navigation">
+
+            <button class="sf-dot is-active"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-label="Slide 1">
+                <span class="sf-dot-inner"></span>
+            </button>
+
+            <button class="sf-dot"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-label="Slide 2">
+                <span class="sf-dot-inner"></span>
+            </button>
+
+            <button class="sf-dot"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-label="Slide 3">
+                <span class="sf-dot-inner"></span>
+            </button>
+
+        </div>
+
+        <!-- Screen reader -->
+        <div id="sf-live"
+             class="visually-hidden"
+             aria-live="polite">
+        </div>
+    </div>
+</section>
+
+<section class="sf-quote-section" aria-labelledby="quote-heading">
+    <div class="sf-quote-inner">
+        <figure class="sf-quote-figure">
+
+            <div class="sf-quote-image">
+                <img src="/images/quote-image.png"
+                     alt="Decorative illustration of books"
+                     loading="lazy" />
+            </div>
+
+            <blockquote class="sf-quote-text">
+                <p id="quote-heading">
+                    “Each illustration begins as a small story. Through color, light, and character, I try to give that story a place to live.”
+                </p>
+                <figcaption class="sf-quote-author">
+                    SARA MOHAMMAD
+                </figcaption>
+            </blockquote>
+        </figure>
+    </div>
+</section>
+
+<!-- Featured products section -->
+<section class="sf-featured" aria-labelledby="featured-heading">
+
+    <div class="sf-featured-inner">
+
+        <h2 id="featured-heading" class="sf-featured-title">
+            Featured Artbooks
+        </h2>
+
+        <div class="sf-product-grid">
+
+            @if (Model?.FeaturedProducts != null && Model.FeaturedProducts.Any())
+            {
+                foreach (var product in Model.FeaturedProducts)
+                {
+                    <article class="sf-product-card">
+
+                        <div class="sf-product-image">
+                            <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.jpg" : product.ImageUrl)"
+                                 alt="@product.Title"
+                                 loading="lazy" />
+                        </div>
+
+                        <h3 class="sf-product-title">@product.Title</h3>
+
+                        <p class="sf-product-author">@product.Author</p>
+
+                        <p class="sf-product-price">
+                            @product.Price.ToString("C")
+                        </p>
+
+                        <a asp-controller="Products"
+                           asp-action="Details"
+                           asp-route-id="@product.Id"
+                           class="sf-product-btn">
+                            View the artbook
+                        </a>
+
+                    </article>
+                }
+            }
+            else
+            {
+                <p>No artbooks available yet.</p>
+            }
+
+        </div>
+
+    </div>
+</section>
+
+<!-- Category section -->
+<section class="sf-categories" aria-labelledby="categories-heading">
+
+    <div class="sf-categories-inner">
+
+        <h2 id="categories-heading" class="sf-categories-title">
+            Categories
+        </h2>
+
+        <div class="sf-categories-grid">
+
+        @if (Model.Categories != null && Model.Categories.Any())
+        {
+         foreach (var category in Model.Categories)
+        {
+        <article class="sf-category-card">
+            <div class="sf-category-image">
+
+                @if (!string.IsNullOrEmpty(category.ImageUrl))
+                {
+                    <img src="@category.ImageUrl"
+                         alt="@category.Name"
+                         loading="lazy" />
+                }
+
+                <div class="sf-category-label">
+                    @category.Name
+                </div>
+
+            </div>
+        </article>
+    }
+}
+        else
+        {
+         <p>No categories available yet.</p>
+        }
+
+        </div>
+
+    </div>
+</section>

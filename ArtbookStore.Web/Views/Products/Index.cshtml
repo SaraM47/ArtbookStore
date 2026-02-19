@@ -17,6 +17,7 @@
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Title)</th>
+            <th>Author</th>
             <th>@Html.DisplayNameFor(model => model.Price)</th>
             <th>Category</th>
             <th>Stock</th>
@@ -29,6 +30,8 @@
 {
         <tr>
             <td>@item.Title</td>
+
+            <td>@item.Author</td>
 
             <td>@item.Price.ToString("C")</td>
 
