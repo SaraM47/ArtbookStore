@@ -6,18 +6,11 @@
 {
     <form asp-area="Identity"
           asp-page="/Account/Logout"
+          asp-route-returnUrl="@Url.Action("Index", "Home")"
           method="post"
           style="display:inline;">
         <button type="submit" class="sf-logout-btn">
             Logout
         </button>
     </form>
-}
-else
-{
-    <a asp-area="Identity"
-       asp-page="/Account/Login"
-       class="sf-auth-link">
-        Login
-    </a>
 }
