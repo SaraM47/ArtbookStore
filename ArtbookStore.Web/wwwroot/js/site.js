@@ -132,3 +132,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial render of the first slide
     render(current);
 });
+
+// Mobile menu toggle for the navigation
+function toggleMenu() {
+    const menu = document.querySelector(".sf-menu");
+    const button = document.querySelector(".sf-hamburger");
+
+    menu.classList.toggle("is-open");
+
+    const isOpen = menu.classList.contains("is-open");
+    button.setAttribute("aria-expanded", isOpen);
+}
