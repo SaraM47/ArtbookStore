@@ -6,7 +6,7 @@
 {
     <form asp-area="Identity"
           asp-page="/Account/Logout"
-          asp-route-returnUrl="@Url.Action("Index", "Home")"
+          asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })"
           method="post"
           style="display:inline;">
         <button type="submit" class="sf-logout-btn">
