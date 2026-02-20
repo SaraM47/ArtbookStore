@@ -14,15 +14,14 @@ namespace ArtbookStore.Web.Migrations
                 name: "ImageUrl",
                 table: "Categories",
                 type: "nvarchar(max)",
-                nullable: true);
+                nullable: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ImageUrl",
-                table: "Categories");
+            migrationBuilder.DropColumn(name: "ImageUrl", table: "Categories");
         }
     }
 }

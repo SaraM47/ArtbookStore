@@ -16,12 +16,14 @@ namespace ArtbookStore.Web.Migrations
                 type: "nvarchar(450)",
                 nullable: false,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+                oldType: "nvarchar(max)"
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
                 table: "Orders",
-                column: "UserId");
+                column: "UserId"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Orders_AspNetUsers_UserId",
@@ -29,19 +31,16 @@ namespace ArtbookStore.Web.Migrations
                 column: "UserId",
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.Restrict
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Orders_AspNetUsers_UserId",
-                table: "Orders");
+            migrationBuilder.DropForeignKey(name: "FK_Orders_AspNetUsers_UserId", table: "Orders");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Orders_UserId",
-                table: "Orders");
+            migrationBuilder.DropIndex(name: "IX_Orders_UserId", table: "Orders");
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
@@ -49,7 +48,8 @@ namespace ArtbookStore.Web.Migrations
                 type: "nvarchar(max)",
                 nullable: false,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(450)");
+                oldType: "nvarchar(450)"
+            );
         }
     }
 }
