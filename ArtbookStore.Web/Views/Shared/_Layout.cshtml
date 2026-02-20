@@ -13,43 +13,99 @@
     <link rel="stylesheet" href="~/ArtbookStore.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
+
 <header class="sf-header">
     <nav class="sf-nav container">
 
         <!-- Logo -->
         <a asp-controller="Home"
-            asp-action="Index"
-            class="sf-logo"
-            aria-label="Sumi Foli Bookstore Home">
+           asp-action="Index"
+           class="sf-logo"
+           aria-label="Sumi Foli Bookstore Home">
 
-        <img src="~/images/logo.svg"
-            alt="Sumi Foli Bookstore"
-            class="sf-logo-img" />
+            <img src="~/images/logo.svg"
+                 alt="Sumi Foli Bookstore"
+                 class="sf-logo-img" />
         </a>
 
         <!-- Navigation -->
         <ul class="sf-menu">
             <li><a asp-controller="Home" asp-action="Index">Home</a></li>
             <li><a asp-controller="Products" asp-action="Index">Shop</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a asp-controller="Home" asp-action="About">About</a></li>
+            <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
+            <!-- Mobile Login -->
+            <li class="mobile-auth">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-area="Identity"
+                        asp-page="/Account/Logout"
+                        method="post">
+                        <button type="submit" class="mobile-login-btn">
+                            Logout
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity"
+                    asp-page="/Account/Login"
+                    class="mobile-login-btn">
+                        Login
+                    </a>
+                }
+            </li>
         </ul>
 
+        <!-- Hamburger (mobile) -->
+        <button class="sf-hamburger"
+                aria-label="Toggle menu"
+                aria-expanded="false"
+                onclick="toggleMenu()">
+            <i class="bi bi-list"></i>
+        </button>
+        
         <!-- Right Icons -->
         <div class="sf-icons">
 
-            <a asp-area="Identity"
-                asp-page="/Account/Manage/Index"
-                aria-label="User account">
-            <i class="bi bi-person"></i>
-            </a>
+            <!-- User account icon -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Admin"
+                       asp-action="Index"
+                       aria-label="User account">
+                        <i class="bi bi-person"></i>
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Orders"
+                       asp-action="Index"
+                       aria-label="User account">
+                        <i class="bi bi-person"></i>
+                    </a>
+                }
+            }
+            else
+            {
+                <a asp-area="Identity"
+                   asp-page="/Account/Login"
+                   aria-label="User account">
+                    <i class="bi bi-person"></i>
+                </a>
+            }
 
-        @if (User.IsInRole("Customer"))
-        {
-            @await Component.InvokeAsync("CartSummary")
-        }
+            <!-- Cart (only for customers) -->
+            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
+            {
+                @await Component.InvokeAsync("CartSummary")
+            }
 
-        <partial name="_LoginPartial" />
+            <!-- Login / Logout -->
+            <partial name="_LoginPartial" />
+
         </div>
     </nav>
 </header>
@@ -91,15 +147,15 @@
         <nav class="sf-footer-nav">
             <a asp-controller="Home" asp-action="Index">Home</a>
             <a asp-controller="Products" asp-action="Index">Shop</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+            <a asp-controller="Home" asp-action="About">About</a>
+            <a asp-controller="Home" asp-action="Contact">Contact</a>
         </nav>
 
-        <!-- Middle with navlinsk in column 1 -->
+        <!-- Middle with navlink in column 1 -->
         <nav class="sf-footer-nav">
-            <a href="#">Terms & conditions</a>
-            <a href="#">Privacy policy</a>
-            <a href="#">FAQ</a>
+            <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+            <a asp-controller="Home" asp-action="Terms">Terms & Conditions</a>
+            <a asp-controller="Home" asp-action="FAQ">FAQ</a>
         </nav>
 
         <!-- Newsletter with button -->
@@ -109,11 +165,8 @@
                 Subscribe
             </button>
         </div>
-
     </div>
-
 </footer>
-
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
