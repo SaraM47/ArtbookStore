@@ -11,6 +11,9 @@ public class Order
     [Required]
     public string UserId { get; set; } = string.Empty;
 
+    // Navigation property to ApplicationUser (ASP.NET Identity user)
+    public ApplicationUser? User { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Required]
