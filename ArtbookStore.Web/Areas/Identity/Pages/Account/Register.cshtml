@@ -34,9 +34,15 @@
 
     </form>
 
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
     <p class="auth-switch">
         Already have an account?
         <a asp-page="./Login">Log in</a>
     </p>
 
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
