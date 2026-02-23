@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ArtbookStore.Web.Models;
 
-// Create a Product class with ProductId, Name, Description, Price, ImageUrl, and CategoryId properties
+// Create a Product class. This includes with ProductId, Name, Description, Price, ImageUrl, and CategoryId properties
 public class Product
 {
-    public int Id { get; set; } // Primärnyckel
+    public int Id { get; set; } // Primary key
 
     [Required]
     public string? Title { get; set; }
