@@ -4,6 +4,7 @@
     ViewData["Title"] = "Login";
 }
 
+<!-- This page is used for user login. It contains a form with fields for email and password, along with validation messages. There is also a link to the registration page for users who don't have an account. -->
 <div class="auth-wrapper">
 
     <h1 class="auth-title">Login</h1>
@@ -13,18 +14,20 @@
         <div>
             <label asp-for="Input.Email"></label>
             <input asp-for="Input.Email" class="auth-input" />
-            <span asp-validation-for="Input.Email" class="text-danger"></span>
+            <span asp-validation-for="Input.Email" class="sf-field-error"></span>
         </div>
 
         <div>
             <label asp-for="Input.Password"></label>
             <input asp-for="Input.Password" class="auth-input" />
-            <span asp-validation-for="Input.Password" class="text-danger"></span>
+            <span asp-validation-for="Input.Password" class="sf-field-error"></span>
         </div>
 
         <button type="submit" class="auth-button">
             Login
         </button>
+
+        <div asp-validation-summary="ModelOnly" class="sf-field-error"></div>
 
     </form>
 
@@ -34,3 +37,8 @@
     </p>
 
 </div>
+
+<!-- Includes jQuery validation scripts.Enables client-side validation. Without this, validation only works server-side. -->
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
