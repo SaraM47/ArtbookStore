@@ -28,19 +28,52 @@
                  class="sf-logo-img" />
         </a>
 
+        @{
+            var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+            var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+        }
+
         <!-- Navigation -->
         <ul class="sf-menu">
-            <li><a asp-controller="Home" asp-action="Index">Home</a></li>
-            <li><a asp-controller="Products" asp-action="Index">Shop</a></li>
-            <li><a asp-controller="Home" asp-action="About">About</a></li>
-            <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
+            <li>
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="@(currentController == "Home" && currentAction == "Index" ? "active-nav" : "")">
+                    Home
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Products"
+                   asp-action="Index"
+                   class="@(currentController == "Products" ? "active-nav" : "")">
+                    Shop
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Home"
+                   asp-action="About"
+                   class="@(currentAction == "About" ? "active-nav" : "")">
+                    About
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Home"
+                   asp-action="Contact"
+                   class="@(currentAction == "Contact" ? "active-nav" : "")">
+                    Contact
+                </a>
+            </li>
+
             <!-- Mobile Login -->
             <li class="mobile-auth">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <form asp-area="Identity"
-                        asp-page="/Account/Logout"
-                        method="post">
+                          asp-page="/Account/Logout"
+                          method="post">
                         <button type="submit" class="mobile-login-btn">
                             Logout
                         </button>
@@ -49,23 +82,31 @@
                 else
                 {
                     <a asp-area="Identity"
-                    asp-page="/Account/Login"
-                    class="mobile-login-btn">
+                       asp-page="/Account/Login"
+                       class="mobile-login-btn">
                         Login
                     </a>
                 }
             </li>
         </ul>
 
-        <!-- Hamburger (mobile) -->
+        <!-- Hamburger menu for mobile -->
         <button class="sf-hamburger"
                 aria-label="Toggle menu"
                 aria-expanded="false"
                 onclick="toggleMenu()">
             <i class="bi bi-list"></i>
         </button>
-        
-        <!-- Right Icons -->
+
+        <!-- Mobile cart (only for customers) -->
+        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
+        {
+            <div class="sf-mobile-cart-wrapper">
+                @await Component.InvokeAsync("CartSummary")
+            </div>
+        }
+
+        <!-- Right Icons for desktop only -->
         <div class="sf-icons">
 
             <!-- User account icon -->
@@ -97,7 +138,7 @@
                 </a>
             }
 
-            <!-- Cart (only for customers) -->
+            <!-- Cart (Desktop only for customers) -->
             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
             {
                 @await Component.InvokeAsync("CartSummary")
@@ -115,14 +156,14 @@
     <!-- Global feedback -->
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success mt-3">
+        <div class="sf-alert sf-alert-success">
             @TempData["Success"]
         </div>
     }
 
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger mt-3">
+        <div class="sf-alert sf-alert-danger">
             @TempData["Error"]
         </div>
     }
@@ -133,7 +174,6 @@
 </div>
 
 <footer class="sf-footer">
-
     <div class="sf-footer-inner">
 
         <!-- Logo -->
@@ -165,9 +205,11 @@
                 Subscribe
             </button>
         </div>
+
     </div>
 </footer>
 
+<!-- Scripts -->
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
