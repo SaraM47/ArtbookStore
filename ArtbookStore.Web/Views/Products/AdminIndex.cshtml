@@ -1,0 +1,323 @@
+@model IEnumerable<ArtbookStore.Web.Models.Product>
+
+<!-- Admin product listing with stock control-->
+@{
+    // Admin layout for admin pages
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Products";
+}
+
+<h1 class="admin-title">Products</h1>
+
+<!-- Container where we inject success/error alerts -->
+<div class="admin-actions">
+    <button class="admin-view-btn" onclick="openCreateModal()">
+        Add new
+    </button>
+</div>
+
+<!-- Success alert container -->
+<div id="adminAlertContainer"></div>
+
+<div class="admin-table-wrapper">
+    <!-- Anti-forgery token is needed for POST requests (AJAX too) -->
+    @Html.AntiForgeryToken()
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        <!-- Loop through products and display them -->
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" class="admin-product-img" />
+                    }
+                </td>
+
+                <td>@item.Title</td>
+                <td>@item.Author</td>
+                <td>@item.Price.ToString("0.00")</td>
+                <td>@item.Category?.Name</td>
+
+                <td>
+                    <div class="stock-control">
+                        <button onclick="updateStock(@item.Id, -1)">-</button>
+                        <span id="stock-@item.Id">@item.StockQuantity</span>
+                        <button onclick="updateStock(@item.Id, 1)">+</button>
+                    </div>
+                </td>
+
+                <td class="order-actions">
+                    <button onclick="openEditModal(
+                        @item.Id,
+                        '@item.Title',
+                        '@item.Author',
+                        @item.Price,
+                        @item.StockQuantity,
+                        '@item.ImageUrl',
+                        @item.CategoryId
+                    )" class="icon-btn">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <button onclick="openDeleteModal(@item.Id, '@item.Title')"
+                            class="icon-btn">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+</div>
+
+<!-- Product modal -->
+<div id="productModal" class="modal">
+    <div class="modal-content">
+
+        <button type="button"
+                class="modal-close"
+                onclick="closeProductModal()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <input type="hidden" id="ProductId" />
+
+        <label>Title</label>
+        <input type="text" id="ProductTitle" />
+
+        <label>Author</label>
+        <input type="text" id="ProductAuthor" />
+
+        <label>Price</label>
+        <input type="number" step="0.01" id="ProductPrice" />
+
+        <label>Stock</label>
+        <input type="number" id="ProductStock" />
+
+        <label>Image URL</label>
+        <input type="text" id="ProductImageUrl" />
+
+        <label>Category</label>
+        <select id="ProductCategory">
+            <option value="">Select category</option>
+            @foreach (var cat in ViewBag.Categories)
+            {
+                <option value="@cat.CategoryId">@cat.Name</option>
+            }
+        </select>
+
+        <div class="modal-actions">
+            <button onclick="saveProduct()" class="admin-view-btn">Save</button>
+            <button onclick="closeProductModal()" class="admin-view-btn">Cancel</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Delete modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+
+        <button type="button"
+                class="modal-close"
+                onclick="closeDeleteModal()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <h3>Delete product</h3>
+        <p id="deleteMessage"></p>
+
+        <div class="modal-actions">
+            <button onclick="confirmDelete()" class="admin-view-btn danger">
+                Yes, delete
+            </button>
+            <button onclick="closeDeleteModal()" class="admin-view-btn">
+                Cancel
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+
+// Store the ID of the product to be deleted
+let deleteProductId = 0;
+
+// Display a temporary alert message
+function showAdminAlert(message, type = "success") {
+    // Type can be "success" or "error" for styling purposes
+    const container = document.getElementById("adminAlertContainer");
+
+    // Clear any existing message
+    container.innerHTML = `
+        <div class="admin-alert ${type}">
+            ${message}
+        </div>
+    `;
+
+    // Remove the message after 4 seconds
+    setTimeout(() => {
+        container.innerHTML = "";
+    }, 4000);
+}
+
+
+/* Stocks */
+// Sends an AJAX request to update the stock quantity of a product
+async function updateStock(id, change) {
+    // Get the anti-forgery token from the page
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    // Prepare the form data to be sent in the request
+    const formData = new FormData();
+    formData.append("id", id);
+    formData.append("change", change);
+    formData.append("__RequestVerificationToken", token);
+
+    // Send the POST request to the server to update the stock
+    const response = await fetch('/Products/UpdateStock', {
+        method: 'POST',
+        body: formData
+    });
+
+    // If the response is not OK, exit the function (you might want to show an error message here)
+    if (!response.ok) return;
+
+    // Parse the JSON response to get the updated stock quantity
+    const data = await response.json();
+    document.getElementById("stock-" + id).innerText = data.stock;
+}
+
+
+/* Create modal */
+
+// Function to open the create product modal and reset all input fields
+function openCreateModal() {
+    document.getElementById("ProductId").value = 0;
+    document.getElementById("ProductTitle").value = "";
+    document.getElementById("ProductAuthor").value = "";
+    document.getElementById("ProductPrice").value = "";
+    document.getElementById("ProductStock").value = "";
+    document.getElementById("ProductImageUrl").value = "";
+    document.getElementById("ProductCategory").value = "";
+
+    document.getElementById("productModal").style.display = "flex";
+}
+
+
+/* Edit modal */
+// Function to open the edit product modal and populate it with the existing product data
+function openEditModal(id, title, author, price, stock, imageUrl, categoryId) {
+    document.getElementById("ProductId").value = id;
+    document.getElementById("ProductTitle").value = title;
+    document.getElementById("ProductAuthor").value = author;
+    document.getElementById("ProductPrice").value = price;
+    document.getElementById("ProductStock").value = stock;
+    document.getElementById("ProductImageUrl").value = imageUrl ?? "";
+    document.getElementById("ProductCategory").value = categoryId;
+
+    document.getElementById("productModal").style.display = "flex";
+}
+
+// Function to close the product modal and reset the form
+function closeProductModal() {
+    document.getElementById("productModal").style.display = "none";
+}
+
+
+/* Save product */
+// Function to send an AJAX request to save the product (both create and update)
+async function saveProduct() {
+
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    const formData = new FormData();
+    formData.append("Id", document.getElementById("ProductId").value);
+    formData.append("Title", document.getElementById("ProductTitle").value);
+    formData.append("Author", document.getElementById("ProductAuthor").value);
+    formData.append("Price", document.getElementById("ProductPrice").value);
+    formData.append("StockQuantity", document.getElementById("ProductStock").value);
+    formData.append("ImageUrl", document.getElementById("ProductImageUrl").value);
+    formData.append("CategoryId", document.getElementById("ProductCategory").value);
+    formData.append("__RequestVerificationToken", token);
+
+    // Send the POST request to save the product
+    const response = await fetch('/Products/Save', {
+        method: 'POST',
+        body: formData
+    });
+
+    // If the response is not OK, show an error alert and exit the function
+    if (!response.ok) {
+        showAdminAlert("Something went wrong.", "error");
+        return;
+    }
+
+    // Show a success alert, close the modal, and reload the page after a short delay to reflect changes
+    showAdminAlert("Product saved successfully.", "success");
+    closeProductModal();
+
+    // Delay the reload to allow users to see the success message before the page refreshes
+    setTimeout(() => location.reload(), 1200);
+}
+
+
+/* Delete modal */
+// Function to open the delete confirmation modal and set the product ID and message
+function openDeleteModal(id, title) {
+    deleteProductId = id;
+    document.getElementById("deleteMessage").innerText =
+        "Are you sure you want to delete \"" + title + "\"?";
+    document.getElementById("deleteModal").style.display = "flex";
+}
+
+// Function to close the delete confirmation modal
+function closeDeleteModal() {
+    document.getElementById("deleteModal").style.display = "none";
+}
+
+// Function to send an AJAX request to delete the product and handle the response
+async function confirmDelete() {
+
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    const formData = new FormData();
+    formData.append("id", deleteProductId);
+    formData.append("__RequestVerificationToken", token);
+
+    const response = await fetch('/Products/Delete', {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        showAdminAlert("Delete failed.", "error");
+        return;
+    }
+
+    showAdminAlert("Product deleted successfully.", "success");
+    closeDeleteModal();
+
+    setTimeout(() => location.reload(), 1200);
+}
+
+</script>
+}
