@@ -1,23 +1,27 @@
 @model ArtbookStore.Web.Models.ViewModels.CartSummaryViewModel
-
-<li class="nav-item dropdown">
+<!-- This is a ViewComponent view (CartSummary). It renders a cart icon in the navbar with a dropdown for cart items.
+-->
+<li class="nav-item dropdown sf-mobile-cart">
     <a class="nav-link dropdown-toggle"
        href="#"
        role="button"
-       data-bs-toggle="dropdown">
-        Cart
+       data-bs-toggle="dropdown"
+       aria-expanded="false">
 
+        <i class="bi bi-cart3"></i>
+        <!-- Show badge only if there are items -->
         @if (Model.ItemCount > 0)
         {
-            <span class="badge bg-danger">@Model.ItemCount</span>
+            <span class="sf-cart-badge">@Model.ItemCount</span>
         }
     </a>
-
+    <!-- Dropdown content -->
     <ul class="dropdown-menu dropdown-menu-end p-3"
         style="min-width: 250px;">
 
         @if (Model.Items != null && Model.Items.Any())
         {
+            // List each item in the cart with title and quantity 
             @foreach (var item in Model.Items)
             {
                 <li>
@@ -27,22 +31,25 @@
 
             <hr />
 
+            // Show total amount at the bottom of the dropdown
             <li>
                 <strong>
                     Total: @Model.TotalAmount.ToString("0.00")
                 </strong>
             </li>
 
-            <li>
-                <a class="btn btn-sm btn-primary mt-2"
-                   asp-controller="Orders"
-                   asp-action="Cart">
+            // Show "View Cart" button that links to the Cart page
+            <li class="mt-2">
+                <a asp-controller="Orders"
+                asp-action="Cart"
+                class="sf-btn sf-cart-dropdown-btn">
                     View Cart
                 </a>
             </li>
         }
         else
         {
+            // If there are no items, show a message indicating the cart is empty
             <li>Your cart is empty</li>
         }
 
