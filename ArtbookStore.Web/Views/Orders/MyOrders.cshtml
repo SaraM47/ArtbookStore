@@ -6,6 +6,7 @@
 
 <h2 class="mb-4">My Orders</h2>
 
+<!-- If the user has no orders, show a friendly message and a link to browse products, otherwise, display a table of the user's past orders -->
 @if (Model == null || !Model.Any())
 {
     <div class="alert alert-info">
@@ -20,6 +21,8 @@
 }
 else
 {
+    // Display a table of the user's past orders with columns for Order #, Date, Status, Total, and a link to view details
+    <div class="myorders-table-wrapper">
     <table class="table table-striped align-middle">
         <thead>
             <tr>
@@ -42,7 +45,7 @@ else
                 <td class="text-end">
                     <a asp-action="Details"
                        asp-route-id="@order.Id"
-                       class="btn btn-sm btn-outline-primary">
+                       class="myorders-btn">
                         View Details
                     </a>
                 </td>
@@ -50,4 +53,5 @@ else
         }
         </tbody>
     </table>
+    </div>
 }
