@@ -187,7 +187,7 @@
 
         <div class="sf-categories-grid">
 
-        @if (Model.Categories != null && Model.Categories.Any())
+        @if (Model?.Categories != null && Model.Categories.Any())
         {
          foreach (var category in Model.Categories)
         {
