@@ -1,0 +1,52 @@
+@model ArtbookStore.Web.Models.ViewModels.ContactViewModel
+
+@{
+    ViewData["Title"] = "Contact";
+}
+
+<!-- Section for contact us -->
+<section class="contact-section">
+
+    <div class="contact-header">
+        <h1>Contact Us</h1>
+        <h2>Do you have a question? Please ask us!</h2>
+        <h2>We are here to help you</h2>
+        <p>Address: Artbookstore 456 London</p>
+        <p>Email: info@sumifolio.com</p>
+    </div>
+
+    <!-- Contact form -->
+    <form asp-action="Contact" method="post" class="contact-form">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="sf-field-error"></div>
+
+        <div class="form-group">
+            <label asp-for="Name"></label>
+            <input asp-for="Name" class="contact-input" />
+            <span asp-validation-for="Name" class="sf-field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="contact-input" />
+            <span asp-validation-for="Email" class="sf-field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Message"></label>
+            <textarea asp-for="Message" rows="4" class="contact-input"></textarea>
+            <span asp-validation-for="Message" class="sf-field-error"></span>
+        </div>
+
+        <button type="submit" class="sf-btn">
+            Send
+        </button>
+    </form>
+
+</section>
+
+<!-- Validation scripts -->
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
