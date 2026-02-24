@@ -1,75 +1,59 @@
 @model ArtbookStore.Web.Models.Order
 
+<!-- This view displays the details of a specific order. It shows the order information, including customer, date, status, total amount, and the list of items in the order. The layout is determined based on the user's role (Admin or regular user). -->
+
 @{
+    // Choose layout based on role: Admins see the admin layout, customers see the normal site layout.
+    Layout = User.IsInRole("Admin") 
+        ? "_AdminLayout" 
+        : "_Layout";
     ViewData["Title"] = "Order Details";
 }
 
-<h2>Order Details</h2>
+<!-- Page title showing order ID -->
+<h1 class="admin-title">Order #@Model.Id</h1>
 
-<hr />
-
-<div class="mb-3">
-    <strong>Order #:</strong> @Model.Id <br />
-    <strong>Date:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm") <br />
-    <strong>Status:</strong> @Model.Status <br />
-    <strong>Total:</strong> @Model.TotalAmount.ToString("C")
+<!-- Order summary box -->
+<div class="admin-box">
+    <!-- Customer email (User can be null if not loaded or deleted) -->
+    <p><strong>Customer:</strong> @Model.User?.Email</p>
+    <!-- Order date formatted for readability -->
+    <p><strong>Date:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+    <!-- Status label with a CSS class based on the status value -->
+    <p>
+        <strong>Status:</strong>
+        <span class="status-badge @Model.Status.ToLower()">
+            @Model.Status
+        </span>
+    </p>
+    <!-- Total amount formatted to 2 decimals -->
+    <p><strong>Total:</strong> @Model.TotalAmount.ToString("0.00")</p>
 </div>
 
+<h2 class="admin-subtitle">Items</h2>
+
+<!-- List all items in this order -->
+<div class="admin-box">
+    @foreach (var item in Model.OrderItems)
+    {
+        <p>
+            @item.Product?.Title –
+            Qty: @item.Quantity –
+            @item.UnitPrice.ToString("0.00")
+        </p>
+    }
+</div>
+
+<!-- Navigation differs by role, Admin goes back to admin order list while Customer goes back to their own order history -->
 @if (User.IsInRole("Admin"))
 {
-    <div class="mb-3">
-        <strong>User ID:</strong> @Model.UserId
-    </div>
-}
-
-<hr />
-
-@if (Model.OrderItems == null || !Model.OrderItems.Any())
-{
-    <div class="alert alert-warning">
-        No items found for this order.
-    </div>
+    <a asp-action="Index" class="admin-view-btn mt-4">
+        Back to Orders
+    </a>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th class="text-end">Unit Price</th>
-                <th class="text-center">Quantity</th>
-                <th class="text-end">Line Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.OrderItems)
-            {
-                <tr>
-                    <td>@item.Product?.Title</td>
-                    <td class="text-end">@item.UnitPrice.ToString("C")</td>
-                    <td class="text-center">@item.Quantity</td>
-                    <td class="text-end">
-                        @(item.Quantity * item.UnitPrice).ToString("C")
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <a asp-action="MyOrders" class="admin-view-btn mt-4">
+        Back to My Orders
+    </a>
 }
-
-<hr />
-
-<div>
-    @if (User.IsInRole("Admin"))
-    {
-        <a asp-action="AdminIndex" class="btn btn-outline-secondary">
-            Back to Admin Orders
-        </a>
-    }
-    else
-    {
-        <a asp-action="MyOrders" class="btn btn-outline-secondary">
-            Back to My Orders
-        </a>
-    }
-</div>
