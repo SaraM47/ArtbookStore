@@ -1,97 +1,160 @@
 @model ArtbookStore.Web.Models.Order
 
 @{
+    // Page title used by the layout
     ViewData["Title"] = "Your Cart";
 }
 
-<h2>Your Cart</h2>
+<section class="sf-cart">
 
-@if (Model == null || Model.OrderItems == null || !Model.OrderItems.Any())
-{
-    <div class="alert alert-info">
-        Your cart is empty.
-    </div>
+    <h1 class="sf-cart-title">Your Cart</h1>
 
-    <a asp-controller="Products"
-       asp-action="Index"
-       class="btn btn-outline-primary">
-        Browse Products
-    </a>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th class="text-end">Price</th>
-                <th>Quantity</th>
-                <th class="text-end">Total</th>
-                <th></th>
-            </tr>
-        </thead>
 
-        <tbody>
-        @foreach (var item in Model.OrderItems)
-        {
-            <tr>
-                <td>@item.Product?.Title</td>
+    <!-- Empty cart message is used if there is no order, or no items, show an "empty cart" message.
+    -->
+    @if (Model == null || Model.OrderItems == null || !Model.OrderItems.Any())
+    {
+        <div class="sf-cart-empty">
+            <p>Your cart is empty.</p>
 
-                <td class="text-end">
-                    @item.UnitPrice.ToString("0.00")
-                </td>
+            <!-- Link back to product listing -->
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="sf-btn">
+                Browse Products
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="sf-cart-items">
 
-                <td>
-                    <form asp-action="UpdateQuantity" method="post" class="d-flex gap-2 align-items-center">
-                        @Html.AntiForgeryToken()
+            <!-- Loop through each order item -->
+            @foreach (var item in Model.OrderItems)
+            {
+                <div class="sf-cart-row">
 
-                        <input type="hidden" name="orderItemId" value="@item.Id" />
+                    <!-- Product image column -->
+                    <div class="sf-cart-image">
+                        @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                        {
+                            <img src="@item.Product.ImageUrl" alt="@item.Product?.Title" />
+                        }
+                    </div>
 
+                    <!-- Product title and unit price for one item -->
+                    <div class="sf-cart-title-col">
+                        <h3>@item.Product?.Title</h3>
+                        <p class="sf-cart-price">
+                            @item.UnitPrice.ToString("F2")
+                        </p>
+                    </div>
+
+                    <!-- Quantity update form is for Posts to OrdersController.UpdateQuantity. Includes AntiForgery token and hidden input for orderItemId. -->
+            <div class="sf-cart-qty">
+                <form asp-action="UpdateQuantity" method="post" class="sf-cart-qty-form">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Identify which cart item should be updated -->
+                    <input type="hidden" name="orderItemId" value="@item.Id" />
+
+                    <!-- Quantity controls (minus, input, plus) -->
+                    <div class="sf-cart-qty-control">
+
+                        <!-- Minus button updates the input via JavaScript -->
+                        <button type="button"
+                                class="sf-qty-btn"
+                                onclick="changeCartQty(this, -1)">
+                            <i class="bi bi-dash"></i>
+                        </button>
+
+                        <!-- Quantity input sent to the server -->
                         <input type="number"
-                               name="quantity"
-                               value="@item.Quantity"
-                               min="1"
-                               class="form-control form-control-sm"
-                               style="width: 90px;" />
+                            name="quantity"
+                            value="@item.Quantity"
+                            min="1"
+                            class="sf-qty-input"
+                            aria-label="Quantity" />
 
-                        <button type="submit" class="btn btn-sm btn-primary">
-                            Update
+                        <!-- Plus button updates the input via JavaScript -->
+                        <button type="button"
+                                class="sf-qty-btn"
+                                onclick="changeCartQty(this, 1)">
+                            <i class="bi bi-plus"></i>
                         </button>
-                    </form>
-                </td>
 
-                <td class="text-end">
-                    @(item.Quantity * item.UnitPrice).ToString("0.00")
-                </td>
+                    </div>
 
-                <td class="text-end">
-                    <form asp-action="RemoveItem" method="post">
-                        @Html.AntiForgeryToken()
+                    <!-- Submit button sends the updated quantity to server -->
+                    <button type="submit" class="sf-qty-update">
+                        Update
+                    </button>
+                </form>
+            </div>
+                    <!-- Line total for quantity * unit price -->
+                    <div class="sf-cart-line-total">
+                        @((item.Quantity * item.UnitPrice).ToString("F2"))
+                    </div>
 
-                        <input type="hidden" name="orderItemId" value="@item.Id" />
+                    <!-- Remove item form for Posts to OrdersController.RemoveItem -->
+                    <div class="sf-cart-remove">
+                        <form asp-action="RemoveItem" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderItemId" value="@item.Id" />
 
-                        <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('Remove this item from your cart?');">
-                            Remove
-                        </button>
-                    </form>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+                            <button type="submit" class="sf-remove-btn">
+                                Remove
+                            </button>
+                        </form>
+                    </div>
 
-    <hr />
+                </div>
+            }
 
-    <div class="d-flex justify-content-between align-items-center">
-        <h4 class="m-0">Total: @Model.TotalAmount.ToString("0.00")</h4>
+        </div>
 
-        <form asp-action="Checkout" method="post">
-            @Html.AntiForgeryToken()
+        <!-- Divider line between items and summary -->
+        <div class="sf-cart-divider"></div>
 
-            <button type="submit" class="btn btn-success">
-                Checkout
-            </button>
-        </form>
-    </div>
+        <!-- Cart summary with total amount and action buttons -->
+        <div class="sf-cart-summary">
+
+            <!-- Total for entire cart (calculated server-side) -->
+            <h2>Total: @Model.TotalAmount.ToString("F2")</h2>
+
+            <div class="sf-cart-actions">
+                <a asp-controller="Products"
+                   asp-action="Index"
+                   class="sf-btn">
+                    Continue Shopping
+                </a>
+
+                <a asp-action="Checkout"
+                   class="sf-btn">
+                    Checkout
+                </a>
+            </div>
+        </div>
+    }
+
+</section>
+
+@section Scripts {
+<script>
+/*
+* Updates the quantity input in the cart UI (client-side only). The actual update happens after the user clicks the "Update" button, which submits the form to the server.
+*/
+function changeCartQty(button, amount) {
+
+    const form = button.closest("form");
+    const input = form.querySelector("input[name='quantity']");
+
+    let value = parseInt(input.value);
+    value += amount;
+
+    if (value < 1) value = 1;
+
+    input.value = value;
+}
+</script>
 }
