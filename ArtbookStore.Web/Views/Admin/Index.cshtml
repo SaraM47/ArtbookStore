@@ -1,0 +1,177 @@
+@model AdminDashboardViewModel
+@{
+    // Use dedicated admin layout
+    Layout = "_AdminLayout";
+    // Page title shown in layout
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Main dashboard heading -->
+<h1 class="admin-title">Dashboard</h1>
+
+<!-- Overview cards section -->
+<div class="admin-cards">
+    <!-- Total products card -->
+    <div class="admin-card">
+        <h3>Total products</h3>
+        <p>@Model.TotalProducts</p>
+        <!-- Navigate to product list -->
+        <a asp-controller="Products" asp-action="Index" class="admin-link">
+            View details
+        </a>
+    </div>
+
+    <!-- Total orders card -->
+    <div class="admin-card">
+        <h3>Total orders</h3>
+        <p>@Model.TotalOrders</p>
+        <a asp-controller="Orders" asp-action="Index" class="admin-link">
+            View details
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <h3>Total revenue</h3>
+        <!-- Format as currency -->
+        <p>@Model.TotalRevenue.ToString("C")</p>
+        <a asp-controller="Orders" asp-action="Index" class="admin-link">
+            View details
+        </a>
+    </div>
+
+    <!-- Low stock summary -->
+    <div class="admin-card">
+        <h3>Low stock items</h3>
+        <p>@Model.LowStockCount</p>
+        <a asp-controller="Products" asp-action="Index" class="admin-link">
+            View details
+        </a>
+    </div>
+
+</div>
+
+<!-- Revenue chart section -->
+<h2 class="admin-subtitle">Revenue overview</h2>
+<!-- Chart container -->
+<div style="height:300px; background:#f5f5f5; padding:20px;">
+    <!-- Canvas where Chart.js renders the chart -->
+    <canvas id="revenueChart"></canvas>
+</div>
+
+<script>
+    // Pass C# model data into JavaScript safely as JSON-arrays for chart labels and data and Html.Raw is used so the JSON is not HTML-encoded.
+    window.revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueLabels));
+    window.revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueData));
+</script>
+
+<!-- Latest activity section -->
+<h2 class="admin-subtitle">Latest activity</h2>
+
+<!-- Recent orders box -->
+<div class="admin-activity">
+
+    <div class="admin-box">
+        <h4>Recent orders</h4>
+        
+        <!-- Check if there are recent orders and display them, in case list is null or empty, otherwise show a message -->
+        @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+        {
+            @foreach (var order in Model.RecentOrders)
+            {
+                <p>
+                    <a asp-controller="Orders"
+                       asp-action="Details"
+                       asp-route-id="@order.Id"
+                       class="order-link">
+                        Order #@order.Id
+                    </a>
+                    –
+                    @order.TotalAmount.ToString("C")
+                    –
+                    <!-- Status badge uses a CSS class based on status -->
+                    <span class="status-badge @order.Status.ToLower()">
+                        @order.Status
+                    </span>
+                </p>
+            }
+        }
+        else
+        {
+            <p>No recent orders.</p>
+        }
+    </div>
+
+    <!-- Low stock products box -->
+    <div class="admin-box">
+        <h4>Low stock products</h4>
+        
+        <!-- Check if there are low stock products and display them, otherwise show a message -->
+        @if (Model.LowStockProducts != null && Model.LowStockProducts.Any())
+        {
+            @foreach (var product in Model.LowStockProducts)
+            {
+                <p>
+                    <!-- Link to edit product (admin workflow) -->
+                    <a asp-controller="Products"
+                       asp-action="Edit"
+                       asp-route-id="@product.Id">
+                        @product.Title
+                    </a>
+                    –
+                    @product.StockQuantity left
+                </p>
+            }
+        }
+        else
+        {
+            <p>No low stock items.</p>
+        }
+    </div>
+
+</div>
+<!-- JavaScript section for rendering the revenue chart using Chart.js -->
+@section Scripts {
+
+<script>
+// Wait for the DOM to be fully loaded before running the script
+document.addEventListener("DOMContentLoaded", function () {
+    // Ensure Chart.js is available before trying to render the chart
+    if (typeof Chart === "undefined") return;
+
+    // Read the data that was injected from C# above
+    const labels = window.revenueLabels || [];
+    const data = window.revenueData || [];
+
+    // If we have no labels, we do not render the chart
+    if (!labels.length) return;
+
+    // Get the canvas rendering context
+    const ctx = document.getElementById("revenueChart").getContext("2d");
+
+    // Create a bar chart using Chart.js
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Monthly Revenue",
+                data: data,
+                backgroundColor: "#000"
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                // Hide legend because only one dataset is shown
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+});
+</script>
+
+}
