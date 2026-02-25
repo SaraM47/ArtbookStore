@@ -1,35 +1,181 @@
 @model IEnumerable<ArtbookStore.Web.Models.Category>
 
 @{
-    ViewData["Title"] = "Index";
+    // Use admin layout
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Categories";
 }
 
-<h1>Index</h1>
+<h1 class="admin-title">Categories</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CategoryId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CategoryId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CategoryId">Delete</a>
-            </td>
-        </tr>
+<!-- Top action bar -->
+<div class="admin-actions">
+    <button class="admin-view-btn" onclick="openModal()">
+        Add new
+    </button>
+</div>
+
+<!-- Categories table -->
+<div class="admin-table-wrapper">
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.Name</td>
+                <td>@category.Slug</td>
+                <td>
+                    <!-- Edit button to calls JS function that fills the modal with existing category data -->
+                    <button onclick="editCategory(@category.CategoryId, '@category.Name', '@category.Slug', '@category.ImageUrl')"
+                        aria-label="Edit category"
+                        class="icon-btn">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    
+                    <!-- Delete flow uses a confirmation modal. This form is kept so we can submit a POST request with AntiForgery token. -->
+                    <form asp-action="Delete"
+                          method="post"
+                          style="display:inline;">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Hidden field that sends category id to the controller -->
+                        <input type="hidden" name="id" value="@category.CategoryId" />
+                    <!-- Button opens confirmation modal, does not submit directly -->
+                    <button type="button"
+                            class="icon-btn"
+                            onclick="openDeleteModal(@category.CategoryId, '@category.Name')"
+                            aria-label="Delete category">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+</div>
+
+<!-- Create and edit Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+
+        <!-- Close icon -->
+        <button type="button"
+                class="modal-close"
+                onclick="closeModal()"
+                aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <!-- Form posts to CategoriesController.Save which handles both create and update logic based on whether CategoryId is 0 (create) or not (update) -->
+        <form asp-action="Save" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- CategoryId decides create vs update which is 0 means new category and > 0 means existing category -->
+            <input type="hidden" id="CategoryId" name="CategoryId" />
+
+            <label>Name</label>
+            <input type="text" name="Name" id="CategoryName" required />
+
+            <label>Slug (optional)</label>
+            <input type="text" name="Slug" id="CategorySlug" />
+
+            <label>Image URL (optional)</label>
+            <input type="text" name="ImageUrl" id="CategoryImageUrl" />
+
+            <div class="modal-actions">
+                <button type="submit" class="admin-view-btn">Save</button>
+                <button type="button" onclick="closeModal()" class="admin-view-btn">Cancel</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- Delete confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+
+        <button type="button"
+                class="modal-close"
+                onclick="closeDeleteModal()"
+                aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <h3>Delete category</h3>
+        <!-- JS will insert text like: Are you sure you want to delete "X"? -->
+        <p id="deleteMessage"></p>
+
+        <!-- This form actually performs deletion via POST -->
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <!-- JS sets this hidden value before opening modal -->
+            <input type="hidden" id="deleteCategoryId" name="id" />
+
+            <div class="modal-actions">
+                <button type="submit" class="admin-view-btn danger">
+                    Yes, delete
+                </button>
+                <button type="button"
+                        onclick="closeDeleteModal()"
+                        class="admin-view-btn">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+<script>
+// Opens the modal for creating a new category
+function openModal() {
+    const form = document.querySelector("#categoryModal form");
+    form.reset();
+
+    document.getElementById("CategoryId").value = 0;
+    document.getElementById("categoryModal").style.display = "flex";
 }
-    </tbody>
-</table>
+
+// Function for opening the edit modal and populating it with category data
+function editCategory(id, name, slug, imageUrl) {
+    document.getElementById("CategoryId").value = id;
+    document.getElementById("CategoryName").value = name;
+    document.getElementById("CategorySlug").value = slug ?? "";
+    document.getElementById("CategoryImageUrl").value = imageUrl ?? "";
+    document.getElementById("categoryModal").style.display = "flex";
+}
+
+// Function for opening the delete confirmation modal
+function openDeleteModal(id, name) {
+    document.getElementById("deleteCategoryId").value = id;
+    document.getElementById("deleteMessage").innerText =
+        "Are you sure you want to delete \"" + name + "\"?";
+    document.getElementById("deleteModal").style.display = "flex";
+}
+
+// Function for closing the delete confirmation modal
+function closeDeleteModal() {
+    document.getElementById("deleteModal").style.display = "none";
+}
+
+// Function for closing the create/edit modal and resetting the form
+function closeModal() {
+    const form = document.querySelector("#categoryModal form");
+    form.reset();
+    document.getElementById("categoryModal").style.display = "none";
+}
+</script>
+}
