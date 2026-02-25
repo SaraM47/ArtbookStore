@@ -1,0 +1,72 @@
+@model ArtbookStore.Web.Models.Order
+
+@{
+    // Set the page title to "Checkout"
+    ViewData["Title"] = "Checkout";
+}
+
+<!-- This view displays the order summary and allows the user to place the order. -->
+<section class="sf-checkout">
+
+    <h1 class="sf-cart-title">Checkout</h1>
+
+<!-- Order summary -->
+    <div class="sf-cart-items">
+        @foreach (var item in Model.OrderItems)
+        {
+            <div class="sf-cart-row">
+
+                <!-- Product image -->
+                <div class="sf-cart-image">
+                    @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                    {
+                        <img src="@item.Product.ImageUrl" alt="@item.Product?.Title" />
+                    }
+                </div>
+
+                <!-- Product title and unit price -->
+                <div class="sf-cart-title-col">
+                    <h3>@item.Product?.Title</h3>
+                    <p class="sf-cart-price">
+                        @item.UnitPrice.ToString("F2")
+                    </p>
+                </div>
+
+                <!-- Quantity -->
+                <div class="sf-cart-qty">
+                    <p>Qty: @item.Quantity</p>
+                </div>
+
+                <!-- Line total for this item (quantity * unit price) -->
+                <div class="sf-cart-line-total">
+                    @((item.Quantity * item.UnitPrice).ToString("F2"))
+                </div>
+
+                <div></div>
+            </div>
+        }
+    </div>
+
+    <!-- Divider line -->
+    <div class="sf-cart-divider"></div>
+
+    <!-- Total amount and action buttons -->
+    <div class="sf-cart-summary">
+        <h2>Total: @Model.TotalAmount.ToString("F2")</h2>
+
+        <!-- Action buttons to Back to cart and Place order -->
+        <div class="sf-cart-actions">
+            <a asp-action="Cart" class="sf-btn">
+                Back to Cart
+            </a>
+
+            <form asp-action="PlaceOrder" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="sf-btn">
+                    Place order
+                </button>
+            </form>
+        </div>
+    </div>
+
+</section>
