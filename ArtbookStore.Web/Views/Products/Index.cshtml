@@ -1,69 +1,189 @@
 @model IEnumerable<ArtbookStore.Web.Models.Product>
 
 @{
-    ViewData["Title"] = "Products";
+    ViewData["Title"] = "Shop";
+
+    // Read categories and pagination info from ViewBag.
+    // Provide safe defaults to avoid null reference errors.
+    var categories = ViewBag.Categories as List<ArtbookStore.Web.Models.Category> ?? new();
+    string? currentCategory = ViewBag.CurrentCategory as string;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
 }
 
-<h1>Products</h1>
+<!-- Hero section -->
+<section class="shop-hero">
+    <h1>Shop</h1>
+    <h2>Collect your favorite artbooks</h2>
+</section>
 
-@if (User.IsInRole("Admin"))
+<!-- Category filter buttons -->
+<section class="shop-categories">
+    <div class="shop-category-buttons">
+
+        <!-- "All" resets filter -->
+        <a asp-action="Index"
+           class="shop-category-btn @(currentCategory == null ? "active" : "")">
+            All
+        </a>
+
+        <!-- Buttons for each category -->
+        @foreach (var cat in categories)
+        {
+            <a asp-action="Index"
+               asp-route-category="@cat.Name"
+               class="shop-category-btn @(currentCategory == cat.Name ? "active" : "")">
+                @cat.Name
+            </a>
+        }
+    </div>
+</section>
+
+<!-- Products card with Grid CSS layout -->
+<section class="shop-grid-section">
+    <div class="shop-grid">
+
+        @foreach (var item in Model)
+        {
+            <article class="shop-card">
+        <!-- Clickable card that links to product details -->
+        <div class="book-card image-has-rotate">
+
+            <a asp-action="Details"
+            asp-route-id="@item.Id"
+            class="book-link"
+            aria-label="View details for @item.Title">
+
+                <div class="book-inner">
+
+                    <!-- Decorative shadow element -->
+                    <div class="image-rotate-shadow"></div>
+
+                    <!-- Main cover image -->
+                    <img src="@item.ImageUrl"
+                        alt="@item.Title by @item.Author"
+                        class="book-cover" />
+
+                    <!-- Extra layer for rotate effect in CSS styling -->
+                    <div class="rotate-before-image"
+                        style="background-image:url('@item.ImageUrl')">
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+            <!-- Basic product information -->
+            <h3>@item.Title</h3>
+                <p class="shop-author">@item.Author</p>
+                <p class="shop-price">$@item.Price.ToString("0.00")</p>
+
+            <!-- Purchase actions depend on role and stock -->
+            @if (User.IsInRole("Customer") && item.StockQuantity > 0)
+            {
+                <!-- This form is used by JavaScript fetch() to add to cart -->
+                <form class="shop-form"
+                    data-product-id="@item.Id">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="productId" value="@item.Id" />
+                    <input type="hidden" name="quantity" value="1" />
+                    <button type="button"
+                            class="shop-btn add-to-cart-btn">
+                        Add to cart
+                    </button>
+                </form>
+            }
+            else if (item.StockQuantity <= 0)
+            {
+                <button class="shop-btn" disabled>
+                    Out of stock
+                </button>
+            }
+            else
+            {
+                <!-- Not logged in or not Customer role -->
+                <a asp-area="Identity"
+                asp-page="/Account/Login"
+                class="shop-btn">
+                    Login to purchase
+                </a>
+            }
+            </article>
+        }
+    </div>
+</section>
+
+<!-- Pagination controls -->
+@if (totalPages > 1)
 {
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Create New Product</a>
-    </p>
+    <nav class="shop-pagination" aria-label="Pagination">
+
+        <!-- Page number links -->
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a asp-action="Index"
+               asp-route-category="@currentCategory"
+               asp-route-page="@i"
+               class="@(currentPage == i ? "active" : "")">
+                @i
+            </a>
+        }
+
+        <!-- Next page link -->
+        @if (currentPage < totalPages)
+        {
+            <a asp-action="Index"
+               asp-route-category="@currentCategory"
+               asp-route-page="@(currentPage + 1)"
+               aria-label="Next page">
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        }
+
+    </nav>
 }
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Title)</th>
-            <th>Author</th>
-            <th>@Html.DisplayNameFor(model => model.Price)</th>
-            <th>Category</th>
-            <th>Stock</th>
-            <th>Image</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model)
-{
-        <tr>
-            <td>@item.Title</td>
+@section Scripts {
+<script>
+// JavaScript to handle "Add to cart" button clicks using fetch() for AJAX requests.
+document.addEventListener("DOMContentLoaded", function () {
 
-            <td>@item.Author</td>
+    // Find all "Add to cart" buttons and attach click listeners
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
 
-            <td>@item.Price.ToString("C")</td>
+        // Find the nearest form related to this button
+        btn.addEventListener("click", async function () {
 
-            <td>
-                @(item.Category != null ? item.Category.Name : "No Category")
-            </td>
+            // Read productId and quantity from hidden inputs
+            const form = this.closest("form");
+            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+            const productId = form.querySelector('input[name="productId"]').value;
+            const quantity = form.querySelector('input[name="quantity"]').value;
 
-            <td>@item.StockQuantity</td>
+            // Build POST form data for the controller
+            const formData = new FormData();
+            formData.append("productId", productId);
+            formData.append("quantity", quantity);
+            formData.append("__RequestVerificationToken", token);
 
-            <td>
-                @if (!string.IsNullOrEmpty(item.ImageUrl))
-                {
-                    <img src="@item.ImageUrl" alt="@item.Title" width="60" />
-                }
-                else
-                {
-                    <span>No image</span>
-                }
-            </td>
+            // Send POST request to OrdersController.Create
+            const response = await fetch("/Orders/Create", {
+                method: "POST",
+                body: formData
+            });
 
-            <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+            // If the request succeeded, update button UI
+            if (response.ok) {
+                this.innerHTML = 'Added <i class="bi bi-check-lg"></i>';
+                this.disabled = true;
 
-                @if (User.IsInRole("Admin"))
-                {
-                    <span> | </span>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                    <span> | </span>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                }
-            </td>
-        </tr>
+                // Simple approach for reload to refresh cart summary UI
+                location.reload();
+            }
+        });
+    });
+});
+</script>
 }
-    </tbody>
-</table>
