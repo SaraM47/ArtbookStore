@@ -1,7 +1,6 @@
 @model ArtbookStore.Web.Models.Order
 
 <!-- This view displays the details of a specific order. It shows the order information, including customer, date, status, total amount, and the list of items in the order. The layout is determined based on the user's role (Admin or regular user). -->
-
 @{
     // Choose layout based on role: Admins see the admin layout, customers see the normal site layout.
     Layout = User.IsInRole("Admin") 
