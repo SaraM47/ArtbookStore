@@ -55,9 +55,9 @@
 
                 <td>
                     <div class="stock-control">
-                        <button onclick="updateStock(@item.Id, -1)">-</button>
+                        <button onclick="updateStock(@item.Id, -1)"><i class="bi bi-dash"></i></button>
                         <span id="stock-@item.Id">@item.StockQuantity</span>
-                        <button onclick="updateStock(@item.Id, 1)">+</button>
+                        <button onclick="updateStock(@item.Id, 1)"><i class="bi bi-plus"></i></button>
                     </div>
                 </td>
 
