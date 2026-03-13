@@ -1,6 +1,6 @@
 # SumiFolio - ArtbookStore
 
-## Project Description
+## Project description
 
 SumiFolio Bookstore is a database-driven web application built with ASP.NET Core MVC. The application functions as an online bookstore where users can browse products, add items to a cart, and place orders.
 
@@ -133,7 +133,7 @@ appsettings.json
     Application configuration
 ```
 
-## System Architecture
+## System architecture
 
 The application is structured into two main layers:
 
