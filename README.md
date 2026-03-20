@@ -412,3 +412,23 @@ Security features include:
 - Restricted admin endpoints
 
 - Ownership checks for order access
+
+## Future improvements
+
+If the application is further developed, several improvements and additional features could be implemented to enhance usability, functionality, and overall system quality.
+
+## Potential enhancements
+
+* Search functionality to allow users to quickly find products
+
+* Sorting options, for example by price, to improve browsing experience
+
+* Image upload functionality for products instead of manually entering ImageURL paths
+
+* Clear stock status indicators on product detail pages, for example showing whether a product is in stock or sold out
+
+* Wishlist or favorites feature for logged-in users to save artbooks
+
+* Discount code system for customers, enabling percentage-based price reductions
+
+* Deployment to a cloud environment for better scalability, accessibility, and production readiness
